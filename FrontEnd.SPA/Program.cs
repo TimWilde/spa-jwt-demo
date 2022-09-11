@@ -52,7 +52,6 @@ app.UseRouting();
 app.UseAuthorization();
 app.UseStaticFiles();
 
-// app.MapPost( "/api/getToken", AuthenticationEndpoint.GetToken( builder ) );
 app.MapGet( "/api/hello", [Authorize]() => "Hello!" );
 
 app.MapControllerRoute( "default", "/api/{controller}/{action=Index}/{id?}" );

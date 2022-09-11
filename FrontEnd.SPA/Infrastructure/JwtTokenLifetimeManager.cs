@@ -22,7 +22,7 @@ public class JwtTokenLifetimeManager : ITokenLifetimeManager
       if ( securityToken is JwtSecurityToken token )
          DisavowedSignatures.TryAdd( token.RawSignature, token.ValidTo );
 
-      foreach ( ( string? key, DateTime _ ) in DisavowedSignatures.Where( x => x.Value <= DateTime.UtcNow ) )
+      foreach ( ( string? key, DateTime _ ) in DisavowedSignatures.Where( x => x.Value < DateTime.UtcNow ) )
          DisavowedSignatures.TryRemove( key, out DateTime _ );
    }
 }
