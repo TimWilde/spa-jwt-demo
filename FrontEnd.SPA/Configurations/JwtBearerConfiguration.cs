@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using FrontEnd.SPA.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -6,7 +7,7 @@ namespace FrontEnd.SPA.Configurations;
 
 public static class JwtBearerConfiguration
 {
-   public static Action<JwtBearerOptions> SetUp( WebApplicationBuilder builder ) => options =>
+   public static Action<JwtBearerOptions> SetUp( WebApplicationBuilder builder, ITokenLifetimeManager tokenLifetimeManager ) => options =>
    {
       options.TokenValidationParameters = new TokenValidationParameters
       {
@@ -16,7 +17,8 @@ public static class JwtBearerConfiguration
          ValidateIssuer = true,
          ValidateAudience = true,
          ValidateLifetime = true,
-         ValidateIssuerSigningKey = true
+         ValidateIssuerSigningKey = true,
+         LifetimeValidator = tokenLifetimeManager.ValidateTokenLifetime
       };
    };
 }

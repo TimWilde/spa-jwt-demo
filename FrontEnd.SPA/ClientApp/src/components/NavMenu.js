@@ -35,6 +35,8 @@ export class NavMenu extends Component {
               <Link to="/fetch-data">Fetch data</Link>
             </li>
           </ul>
+          
+          <p>Or, view the <a href="//localhost:7172/swagger/index.html" target="swagger">Swagger UI</a></p>
         </header>
     );
   }

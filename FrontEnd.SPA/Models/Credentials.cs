@@ -2,4 +2,4 @@
 
 namespace FrontEnd.SPA.Models;
 
-public record User( string Username, string Password );
+public record Credentials( string Username, string Password );

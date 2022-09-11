@@ -8,7 +8,7 @@ namespace FrontEnd.SPA.Endpoints;
 
 public static class AuthenticationEndpoint
 {
-   public static Func<User, IResult> GetToken( WebApplicationBuilder builder ) => user =>
+   public static Func<Credentials, IResult> GetToken( WebApplicationBuilder builder ) => user =>
    {
       if ( !string.Equals( "admin@wilde.id", user.Username, StringComparison.InvariantCultureIgnoreCase ) ||
            !string.Equals( "P4ssw0rd!", user.Password, StringComparison.InvariantCulture ) )

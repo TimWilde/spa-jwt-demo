@@ -1,5 +1,8 @@
 using FrontEnd.SPA.Configurations;
-using FrontEnd.SPA.Endpoints;
+using FrontEnd.SPA.Infrastructure;
+using FrontEnd.SPA.Models;
+using FrontEnd.SPA.Services;
+using FrontEnd.SPA.Services.Implementation;
 using Microsoft.AspNetCore.Authorization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder( args );
@@ -13,10 +16,17 @@ builder.Services.AddSwaggerGen( setup =>
    setup.AddSecurityRequirement( SwaggerConfiguration.SecurityRequirements );
 } );
 
+var tokenLifetimeManager = new JwtTokenLifetimeManager();
+builder.Services
+       .AddSingleton<ITokenLifetimeManager>( tokenLifetimeManager )
+       .AddSingleton<IAccountAuthentication, CredentialsCheck>();
+
 builder.Services.AddAuthentication( AuthenticationConfiguration.SetUpOptions )
-   .AddJwtBearer( JwtBearerConfiguration.SetUp( builder ) );
+       .AddJwtBearer( JwtBearerConfiguration.SetUp( builder, tokenLifetimeManager ) );
 
 builder.Services.AddAuthorization();
+
+builder.Services.Configure<JwtSettings>( builder.Configuration.GetSection( JwtSettings.SectionName ) );
 
 // Configure MVC Components
 builder.Services.AddControllersWithViews(); // TODO: Minimal APIs instead?
@@ -42,7 +52,7 @@ app.UseRouting();
 app.UseAuthorization();
 app.UseStaticFiles();
 
-app.MapPost( "/api/getToken", AuthenticationEndpoint.GetToken( builder ) );
+// app.MapPost( "/api/getToken", AuthenticationEndpoint.GetToken( builder ) );
 app.MapGet( "/api/hello", [Authorize]() => "Hello!" );
 
 app.MapControllerRoute( "default", "/api/{controller}/{action=Index}/{id?}" );
