@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using FrontEnd.SPA.Infrastructure;
 using FrontEnd.SPA.Models;
@@ -45,7 +46,9 @@ public class AuthenticationController : ControllerBase
          Subject = new ClaimsIdentity( new[]
          {
             new Claim( JwtRegisteredClaimNames.Sub, credentials.Username ),
-            new Claim( JwtRegisteredClaimNames.Email, credentials.Username )
+            new Claim( JwtRegisteredClaimNames.Email, credentials.Username ),
+            new Claim( JwtRegisteredClaimNames.Nonce,
+                       Convert.ToBase64String( SHA256.HashData( Encoding.UTF8.GetBytes( "Something random" ) ) ) )
          } ),
          SigningCredentials = new SigningCredentials(
             new SymmetricSecurityKey( Encoding.UTF8.GetBytes( configuration.Key ) ),
@@ -55,7 +58,16 @@ public class AuthenticationController : ControllerBase
 
       var token = new JwtSecurityTokenHandler().CreateToken( tokenDescriptor ) as JwtSecurityToken;
 
-      return Ok( new JwtToken( token.RawData ) );
+      Response.Cookies.Append( "vftn",
+                               "Something random",
+                               new CookieOptions
+                               {
+                                  HttpOnly = true,
+                                  Secure = true,
+                                  SameSite = SameSiteMode.Strict,
+                                  IsEssential = true
+                               } );
+      return Ok( new JwtToken( token!.RawData ) );
    }
 
    [HttpPost( "logout" )]
