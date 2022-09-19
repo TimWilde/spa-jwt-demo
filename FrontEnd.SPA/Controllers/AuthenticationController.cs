@@ -1,7 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using FrontEnd.SPA.Infrastructure;
 using FrontEnd.SPA.Models;
@@ -38,6 +37,7 @@ public class AuthenticationController : ControllerBase
    {
       if ( !authentication.IsValid( credentials ) ) return Unauthorized();
 
+      var userFingerprint = "Something random";
       var tokenDescriptor = new SecurityTokenDescriptor
       {
          Issuer = configuration.Issuer,
@@ -47,8 +47,7 @@ public class AuthenticationController : ControllerBase
          {
             new Claim( JwtRegisteredClaimNames.Sub, credentials.Username ),
             new Claim( JwtRegisteredClaimNames.Email, credentials.Username ),
-            new Claim( JwtRegisteredClaimNames.Nonce,
-                       Convert.ToBase64String( SHA256.HashData( Encoding.UTF8.GetBytes( "Something random" ) ) ) )
+            new Claim( JwtRegisteredClaimNames.Jti, JwtTokenReplayManager.Encode( userFingerprint ) )
          } ),
          SigningCredentials = new SigningCredentials(
             new SymmetricSecurityKey( Encoding.UTF8.GetBytes( configuration.Key ) ),
@@ -58,8 +57,8 @@ public class AuthenticationController : ControllerBase
 
       var token = new JwtSecurityTokenHandler().CreateToken( tokenDescriptor ) as JwtSecurityToken;
 
-      Response.Cookies.Append( "vftn",
-                               "Something random",
+      Response.Cookies.Append( "__Host-vftn",
+                               userFingerprint,
                                new CookieOptions
                                {
                                   HttpOnly = true,
@@ -72,18 +71,14 @@ public class AuthenticationController : ControllerBase
 
    [HttpPost( "logout" )]
    [ProducesResponseType( (int) HttpStatusCode.OK )]
-   public IActionResult LogOut()
+   public IActionResult LogOut( [FromHeader( Name = "Authorization" )] string? authorization )
    {
-      string? authorization = Request.Headers.Authorization.FirstOrDefault();
-
       if ( string.IsNullOrWhiteSpace( authorization ) ) return Ok();
 
-      string bearerToken = authorization.Replace( "Bearer ", string.Empty, StringComparison.InvariantCultureIgnoreCase );
+      string bearerToken =
+         authorization.Replace( "Bearer ", string.Empty, StringComparison.InvariantCultureIgnoreCase );
 
-      string[] parts = bearerToken.Split( '.', StringSplitOptions.RemoveEmptyEntries );
-
-      if ( parts.Length == 3 )
-         tokenLifetimeManager.SignOut( new JwtSecurityToken( bearerToken ) );
+      tokenLifetimeManager.SignOut( new JwtSecurityToken( bearerToken ) );
 
       return Ok();
    }

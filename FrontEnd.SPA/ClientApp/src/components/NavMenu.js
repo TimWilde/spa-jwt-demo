@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './NavMenu.css';
 import {Link} from "wouter";
+import AppRoutes from "../AppRoutes";
 
 export class NavMenu extends Component {
   static displayName = NavMenu.name;
@@ -25,15 +26,11 @@ export class NavMenu extends Component {
         <header>
           <h1>FrontEnd.SPA</h1>
           <ul>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/counter">Counter</Link>
-            </li>
-            <li>
-              <Link to="/fetch-data">Fetch data</Link>
-            </li>
+            {AppRoutes.map((route, index)=>(
+               <li key={index}>
+                 <Link to={route.path}>{route.name}</Link>
+               </li>
+            ))}
           </ul>
           
           <p>Or, view the <a href="//localhost:7172/swagger/index.html" target="swagger">Swagger UI</a></p>

@@ -16,13 +16,15 @@ builder.Services.AddSwaggerGen( setup =>
    setup.AddSecurityRequirement( SwaggerConfiguration.SecurityRequirements );
 } );
 
-var tokenLifetimeManager = new JwtTokenLifetimeManager();
 builder.Services
-       .AddSingleton<ITokenLifetimeManager>( tokenLifetimeManager )
-       .AddSingleton<IAccountAuthentication, CredentialsCheck>();
+       .AddHttpContextAccessor()
+       .AddSingleton<ITokenLifetimeManager, JwtTokenLifetimeManager>()
+       .AddSingleton<ITokenReplayManager, JwtTokenReplayManager>()
+       .AddSingleton<IAccountAuthentication, StupidCredentialsCheck>();
 
-builder.Services.AddAuthentication( AuthenticationConfiguration.SetUpOptions )
-       .AddJwtBearer( JwtBearerConfiguration.SetUp( builder, tokenLifetimeManager ) );
+builder.Services
+       .AddAuthentication( AuthenticationConfiguration.SetUpOptions )
+       .AddJwtBearer( JwtBearerConfiguration.SetUp( builder ) );
 
 builder.Services.AddAuthorization();
 
@@ -31,7 +33,9 @@ builder.Services.Configure<JwtSettings>( builder.Configuration.GetSection( JwtSe
 // Configure MVC Components
 builder.Services.AddControllersWithViews(); // TODO: Minimal APIs instead?
 
-WebApplication app = builder.Build();
+WebApplication app = builder.Build(); // ----------------------------------------------------------
+
+app.UseJwtTokenManagement();
 
 // Configure the HTTP request pipeline.
 if ( app.Environment.IsDevelopment() )

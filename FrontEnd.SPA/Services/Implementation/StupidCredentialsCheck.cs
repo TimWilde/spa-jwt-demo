@@ -2,7 +2,7 @@
 
 namespace FrontEnd.SPA.Services.Implementation;
 
-public class CredentialsCheck : IAccountAuthentication
+public class StupidCredentialsCheck : IAccountAuthentication
 {
    public bool IsValid( Credentials credentials ) =>
       string.Equals( credentials.Username, "string", StringComparison.InvariantCultureIgnoreCase ) &&

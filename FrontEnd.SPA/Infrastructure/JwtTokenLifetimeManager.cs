@@ -8,14 +8,14 @@ public class JwtTokenLifetimeManager : ITokenLifetimeManager
 {
    private static readonly ConcurrentDictionary<string, DateTime> DisavowedSignatures = new();
 
-   public bool ValidateTokenLifetime( DateTime? notBefore,
-                                      DateTime? expires,
-                                      SecurityToken securityToken,
-                                      TokenValidationParameters validationParameters ) =>
+   public bool ValidateToken( DateTime? notBefore,
+                              DateTime? expires,
+                              SecurityToken securityToken,
+                              TokenValidationParameters validationParameters ) =>
       securityToken is JwtSecurityToken token &&
       token.ValidFrom <= DateTime.UtcNow &&
       token.ValidTo >= DateTime.UtcNow &&
-      !DisavowedSignatures.ContainsKey( token.RawSignature );
+      DisavowedSignatures.ContainsKey( token.RawSignature ) is false;
 
    public void SignOut( SecurityToken securityToken )
    {
